@@ -59,7 +59,7 @@ void convertToGrayscale(const Mat &img, Mat &imgGray)
 	}
 }
 
-void computeCostVolume(const Mat &imgLeft, const Mat &imgRight, vector<Mat> *costVolumeLeft, vector<Mat> *costVolumeRight, int windowSize=5, int maxDisp=15)
+void computeCostVolume(const Mat &imgLeft, const Mat &imgRight, vector<Mat> &costVolumeLeft, vector<Mat> &costVolumeRight, int windowSize=5, int maxDisp=15)
 {	
 	// assumption: windowSize odd
 	if(windowSize % 2 ==0)
@@ -74,13 +74,13 @@ void computeCostVolume(const Mat &imgLeft, const Mat &imgRight, vector<Mat> *cos
 #else
 		Mat imgCostLeft(imgLeft.rows,imgLeft.cols, CV_8U, double(0));
 #endif
-		costVolumeLeft->push_back(imgCostLeft);
+		costVolumeLeft.push_back(imgCostLeft);
 #ifndef TEST
 		Mat imgCostRight(imgRight.rows,imgRight.cols, CV_32FC1, double(0));
 #else
 		Mat imgCostRight(imgRight.rows,imgRight.cols, CV_8U, double(0));
 #endif
-		costVolumeRight->push_back(imgCostRight);
+		costVolumeRight.push_back(imgCostRight);
 		for(int rowNr = windowOffset; rowNr < imgLeft.rows-windowOffset; rowNr++ )
 		{
 			for(int columnNr = windowOffset + disp; columnNr < imgLeft.cols-windowOffset; columnNr++ )

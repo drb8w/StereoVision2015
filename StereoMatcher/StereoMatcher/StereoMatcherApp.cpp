@@ -5,7 +5,7 @@
 
 #include "stdafx.h"
 #include <stdio.h> 
-#include <string.h> 
+#include <string> 
 #include <list>
 #include <vector>
 #include <cmath>
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	vector<Mat> *costVolumeRight = new vector<Mat>();
 	int windowSize=5;
 	int maxDisp=15;
-	computeCostVolume(imgLeftGray, imgRightGray, costVolumeLeft, costVolumeRight, windowSize, maxDisp);
+	computeCostVolume(imgLeftGray, imgRightGray, *costVolumeLeft, *costVolumeRight, windowSize, maxDisp);
 
 #ifdef TEST
 	for(int i=0; i<costVolumeLeft->size();i++)
@@ -64,6 +64,25 @@ int main(int argc, char *argv[])
 		imwrite("./tsukuba_left_cost_volume"+ string(intStr) +".png", (*costVolumeLeft)[i]);
 	}
 #endif
+
+	// ===============================================================
+	// Select Disparity 
+	// ===============================================================
+	
+	Mat displayLeft(imgLeft.rows,imgLeft.cols, CV_8U, (uchar)255);
+	Mat displayRight(imgRight.rows,imgRight.cols, CV_8U, (uchar)255);
+	int scaleDispFactor = 16;
+
+	selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
+
+	// ===============================================================
+	// Write Displays 
+	// ===============================================================
+
+	string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
+	imwrite(displayLeftStr, displayLeft);
+	string displayRightStr = imgRightPath.substr(0,imgRightPath.size()-4) + "_display.png";
+	imwrite(displayRightStr, displayRight);
 	
 	return 0;
 }

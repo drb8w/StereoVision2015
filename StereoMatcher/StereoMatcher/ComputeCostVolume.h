@@ -11,6 +11,6 @@ std::vector<cv::Mat> * loadImages(std::string &path, std::string &fileName, std:
 
 void convertToGrayscale(const cv::Mat &img, cv::Mat &imgGray);
 
-void computeCostVolume(const cv::Mat &imgLeft, const cv::Mat &imgRight, std::vector<cv::Mat> *costVolumeLeft, std::vector<cv::Mat> *costVolumeRight, int windowSize=5, int maxDisp=15);
+void computeCostVolume(const cv::Mat &imgLeft, const cv::Mat &imgRight, std::vector<cv::Mat> &costVolumeLeft, std::vector<cv::Mat> &costVolumeRight, int windowSize=5, int maxDisp=15);
 
 #endif
