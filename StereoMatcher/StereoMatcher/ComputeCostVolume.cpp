@@ -8,10 +8,35 @@
 
 using namespace cv;
 
-Mat loadImage(char* imagepath)
+Mat loadImage(const char* imagepath)
 {
 	Mat image = imread(imagepath);//, CV_LOAD_IMAGE_COLOR);
 	return image;
+}
+
+vector<Mat> * loadImages(string &path, string &fileName, string &fileSuffix, int frameNo, int nrDigits=4)
+{
+	vector<Mat> *list = new vector<Mat>();   
+	for (int idx=0;idx<frameNo; idx++)
+	{
+		char *intStr = (char *)calloc(5, sizeof(char));
+		
+		if (nrDigits == 4)
+			sprintf(intStr, "%04d", idx);
+		else
+			sprintf(intStr, "%03d", idx);
+		
+		string str = string(intStr);
+		string imgname = path + fileName + "_" + str + fileSuffix;
+		
+		Mat image = imread(imgname);
+
+		free(intStr);
+		
+		if(image.data)
+			list->push_back(image);
+	}
+	return list;
 }
 
 void convertToGrayscale(const Mat &img, Mat &imgGray)
@@ -37,6 +62,8 @@ void convertToGrayscale(const Mat &img, Mat &imgGray)
 void computeCostVolume(const Mat &imgLeft, const Mat &imgRight, vector<Mat> *costVolumeLeft, vector<Mat> *costVolumeRight, int windowSize=5, int maxDisp=15)
 {	
 	// assumption: windowSize odd
+	if(windowSize % 2 ==0)
+		return;
 	int windowOffset = floor((float)(windowSize/2));
 
 	for(int disp=0; disp<=maxDisp; disp++)

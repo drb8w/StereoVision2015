@@ -5,24 +5,45 @@
 
 #include "stdafx.h"
 #include <stdio.h> 
-#include <math.h>       /* floor */
+#include <string.h> 
+#include <list>
+#include <vector>
+#include <cmath>
 #include <opencv2\opencv.hpp> 
 
 #include "ComputeCostVolume.h"
 #include "SelectDisparity.h"
+#include "StringExtensions.h"
 
 using namespace cv;
 
 int main(int argc, char *argv[])
 {
+	// ===============================================================
+	// Load Images
+	// ===============================================================
+
+	string imgLeftPath = "./tsukuba_left.png";
+	ImgPath(argc, argv, 1, imgLeftPath);
 	
-	Mat imgLeft = loadImage("./tsukuba_left.png");
-	Mat imgRight = loadImage("./tsukuba_right.png");
+	string imgRightPath = "./tsukuba_right.png";
+	ImgPath(argc, argv, 2, imgRightPath);
+	
+	Mat imgLeft = loadImage(imgLeftPath.c_str());
+	Mat imgRight = loadImage(imgRightPath.c_str());
+
+	// ===============================================================
+	// Convert Images 
+	// ===============================================================
 
 	Mat imgLeftGray(imgLeft.rows,imgLeft.cols, CV_8U);
 	convertToGrayscale(imgLeft, imgLeftGray); 
 	Mat imgRightGray(imgRight.rows,imgRight.cols, CV_8U);
 	convertToGrayscale(imgRight, imgRightGray); 
+
+	// ===============================================================
+	// Compute Cost Volume 
+	// ===============================================================
 	
 	vector<Mat> *costVolumeLeft = new vector<Mat>();
 	vector<Mat> *costVolumeRight = new vector<Mat>();
