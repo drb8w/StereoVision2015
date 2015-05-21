@@ -15,6 +15,9 @@
 #include "SelectDisparity.h"
 #include "StringExtensions.h"
 
+#include <iostream>
+using namespace std;
+
 using namespace cv;
 
 int main(int argc, char *argv[])
@@ -22,68 +25,88 @@ int main(int argc, char *argv[])
 	// ===============================================================
 	// Load Images
 	// ===============================================================
-
-	string imgLeftPath = "./tsukuba_left.png";
-	ImgPath(argc, argv, 1, imgLeftPath);
 	
-	string imgRightPath = "./tsukuba_right.png";
-	ImgPath(argc, argv, 2, imgRightPath);
+
+	string imgNames[] = {"tsukuba", "venus", "teddy", "cones"};
+	int maxDisps[] = {15, 19, 59, 59};
+
+	for(int i=0; i<4; i++){
+
+		//int i = 3;
+
+		int windowSize=5;
+		int maxDisp=maxDisps[i];
+
+		string imgLeftPath = "./testdata/stereo-pairs/"+ imgNames[i] + "/imL.png";
+		ImgPath(argc, argv, 1, imgLeftPath);
 	
-	Mat imgLeft = loadImage(imgLeftPath.c_str());
-	Mat imgRight = loadImage(imgRightPath.c_str());
-
-	// ===============================================================
-	// Convert Images 
-	// ===============================================================
-
-	Mat imgLeftGray(imgLeft.rows,imgLeft.cols, CV_8U);
-	convertToGrayscale(imgLeft, imgLeftGray); 
-	Mat imgRightGray(imgRight.rows,imgRight.cols, CV_8U);
-	convertToGrayscale(imgRight, imgRightGray); 
-
-	// ===============================================================
-	// Compute Cost Volume 
-	// ===============================================================
+		string imgRightPath = "./testdata/stereo-pairs/"+ imgNames[i] + "/imR.png";
+		ImgPath(argc, argv, 2, imgRightPath);
 	
-	vector<Mat> *costVolumeLeft = new vector<Mat>();
-	vector<Mat> *costVolumeRight = new vector<Mat>();
-	int windowSize=5;
-	int maxDisp=15;
-	computeCostVolume(imgLeftGray, imgRightGray, *costVolumeLeft, *costVolumeRight, windowSize, maxDisp);
+		Mat imgLeft = loadImage(imgLeftPath.c_str());
+		Mat imgRight = loadImage(imgRightPath.c_str());
 
-#ifdef TEST
-	for(int i=0; i<costVolumeLeft->size();i++)
-	{
-		char intStr[10];
-		itoa (i,intStr,10);
-		string str = "Display window " + string(intStr);
+		// ===============================================================
+		// Convert Images 
+		// ===============================================================
 
-		namedWindow( str, WINDOW_AUTOSIZE );// Create a window for display.
-		imshow( str, (*costVolumeLeft)[i] ); 
+		Mat imgLeftGray(imgLeft.rows,imgLeft.cols, CV_8U);
+		convertToGrayscale(imgLeft, imgLeftGray); 
+		Mat imgRightGray(imgRight.rows,imgRight.cols, CV_8U);
+		convertToGrayscale(imgRight, imgRightGray); 
 
-		imwrite("./tsukuba_left_cost_volume"+ string(intStr) +".png", (*costVolumeLeft)[i]);
+		// ===============================================================
+		// Compute Cost Volume 
+		// ===============================================================
+	
+		vector<Mat> *costVolumeLeft = new vector<Mat>();
+		vector<Mat> *costVolumeRight = new vector<Mat>();
+		computeCostVolume(imgLeftGray, imgRightGray, *costVolumeLeft, *costVolumeRight, windowSize, maxDisp);
+
+
+
+	#ifdef TEST
+	
+			cout << "showimg";
+		for(int i=0; i<costVolumeLeft->size();i++)
+		{
+			char intStr[10];
+			itoa (i,intStr,10);
+		
+			cout << i;
+			string str = "Display window " + string(intStr);
+
+			namedWindow( str, WINDOW_AUTOSIZE );// Create a window for display.
+			imshow( str, (*costVolumeLeft)[i] ); 
+
+			imwrite("./tsukuba_left_cost_volume"+ string(intStr) +".png", (*costVolumeLeft)[i]);
+		}
+			cout << "showimg end";
+	#endif
+
+		// ===============================================================
+		// Select Disparity 
+		// ===============================================================
+	
+		Mat displayLeft(imgLeft.rows,imgLeft.cols, CV_8U, (uchar)255);
+		Mat displayRight(imgRight.rows,imgRight.cols, CV_8U, (uchar)255);
+		int scaleDispFactor = 16;
+
+		selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
+
+		// ===============================================================
+		// Write Displays 
+		// ===============================================================
+
+		//string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
+		string displayLeftStr = "./output/" + imgNames[i] + "_left.png";
+		imwrite(displayLeftStr, displayLeft);
+		//string displayRightStr = imgRightPath.substr(0,imgRightPath.size()-4) + "_display.png";
+		string displayRightStr = "./output/" + imgNames[i] + "_right.png";
+		imwrite(displayRightStr, displayRight);
 	}
-#endif
 
-	// ===============================================================
-	// Select Disparity 
-	// ===============================================================
-	
-	Mat displayLeft(imgLeft.rows,imgLeft.cols, CV_8U, (uchar)255);
-	Mat displayRight(imgRight.rows,imgRight.cols, CV_8U, (uchar)255);
-	int scaleDispFactor = 16;
 
-	selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
-
-	// ===============================================================
-	// Write Displays 
-	// ===============================================================
-
-	string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
-	imwrite(displayLeftStr, displayLeft);
-	string displayRightStr = imgRightPath.substr(0,imgRightPath.size()-4) + "_display.png";
-	imwrite(displayRightStr, displayRight);
-	
 	return 0;
 }
 

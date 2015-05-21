@@ -9,11 +9,16 @@ void _selectDisparity(cv::Mat &display, std::vector<cv::Mat> &costVolume)
 {
 	int maxDisp = costVolume.size();
 
-	for(int disp=0; disp<=maxDisp; disp++)
-		for(int rowNr = 0; rowNr < display.rows; rowNr++ )
-			for(int columnNr = 0; columnNr < display.cols; columnNr++ )
-				if (display.at<uchar>(rowNr, columnNr) > costVolume[disp].at<float>(rowNr, columnNr))
-					display.at<uchar>(rowNr, columnNr) = (uchar)costVolume[disp].at<float>(rowNr, columnNr);
+	for(int rowNr = 0; rowNr < display.rows; rowNr++ )
+		for(int columnNr = 0; columnNr < display.cols; columnNr++ ){
+			float minCost = costVolume[0].at<float>(rowNr, columnNr);
+			for(int disp=0; disp<maxDisp; disp++)
+				if (minCost > costVolume[disp].at<float>(rowNr, columnNr)){
+					display.at<uchar>(rowNr, columnNr) = (uchar)disp;
+					//display.at<uchar>(rowNr, columnNr) = (uchar)costVolume[disp].at<float>(rowNr, columnNr);
+					minCost = costVolume[disp].at<float>(rowNr, columnNr);
+				}
+		}
 }
 
 void _scaleDisplay(cv::Mat &display, int scaleDispFactor)
