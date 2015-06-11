@@ -26,16 +26,22 @@ int main(int argc, char *argv[])
 	// Load Images
 	// ===============================================================
 	
+	cout << "start matching" << endl;
 
 	string imgNames[] = {"tsukuba", "venus", "teddy", "cones"};
 	int maxDisps[] = {15, 19, 59, 59};
+	int scales[] = {16, 8, 4, 4};
 
 	for(int i=0; i<4; i++){
 
-		//int i = 3;
+		//int i = 1;
+		
+		cout << imgNames[i] << endl;
 
-		int windowSize=5;
+		int windowSize=13;
 		int maxDisp=maxDisps[i];
+		int scaleDispFactor = scales[i];
+
 
 		string imgLeftPath = "./testdata/stereo-pairs/"+ imgNames[i] + "/imL.png";
 		ImgPath(argc, argv, 1, imgLeftPath);
@@ -88,9 +94,9 @@ int main(int argc, char *argv[])
 		// Select Disparity 
 		// ===============================================================
 	
+
 		Mat displayLeft(imgLeft.rows,imgLeft.cols, CV_8U, (uchar)255);
 		Mat displayRight(imgRight.rows,imgRight.cols, CV_8U, (uchar)255);
-		int scaleDispFactor = 16;
 
 		selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
 
@@ -99,13 +105,15 @@ int main(int argc, char *argv[])
 		// ===============================================================
 
 		//string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
-		string displayLeftStr = "./output/" + imgNames[i] + "_left.png";
+		string displayLeftStr = "./" + imgNames[i] + "_left.png";
 		imwrite(displayLeftStr, displayLeft);
 		//string displayRightStr = imgRightPath.substr(0,imgRightPath.size()-4) + "_display.png";
-		string displayRightStr = "./output/" + imgNames[i] + "_right.png";
+		string displayRightStr = "./" + imgNames[i] + "_right.png";
 		imwrite(displayRightStr, displayRight);
 	}
-
+	
+	cout << "end matching" << endl;
+	
 
 	return 0;
 }

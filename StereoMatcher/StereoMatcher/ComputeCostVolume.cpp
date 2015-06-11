@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include <stdio.h> 
+//#include <stdlib.h> 
 #include <math.h>
 #include <opencv2\opencv.hpp> 
 
@@ -66,48 +67,63 @@ void computeCostVolume(const Mat &imgLeft, const Mat &imgRight, vector<Mat> &cos
 		return;
 	int windowOffset = floor((float)(windowSize/2));
 
+	
 	for(int disp=0; disp<=maxDisp; disp++)
 	{
+
 		// cleared image
 #ifndef TEST
 		Mat imgCostLeft(imgLeft.rows,imgLeft.cols, CV_32FC1, double(0));
-#else
-		Mat imgCostLeft(imgLeft.rows,imgLeft.cols, CV_8U, double(0));
-#endif
-		costVolumeLeft.push_back(imgCostLeft);
-#ifndef TEST
 		Mat imgCostRight(imgRight.rows,imgRight.cols, CV_32FC1, double(0));
+		Mat imgSAT(imgLeft.rows,imgLeft.cols, CV_32FC1, double(0));
 #else
 		Mat imgCostRight(imgRight.rows,imgRight.cols, CV_8U, double(0));
+		Mat imgCostLeft(imgLeft.rows,imgLeft.cols, CV_8U, double(0));
+		Mat imgSAT(imgLeft.rows,imgLeft.cols, CV_8U, double(0));
 #endif
+		costVolumeLeft.push_back(imgCostLeft);
 		costVolumeRight.push_back(imgCostRight);
+
+
+		//sliding window
+
+		imgSAT.at<float>(0, 0) = imgLeft.at<uchar>(0, disp) - imgRight.at<uchar>(0, 0);
+		
+		for(int rowNr = 1; rowNr < imgLeft.rows; rowNr++ )
+			imgSAT.at<float>(rowNr, 0) = imgSAT.at<float>(rowNr-1, 0) + abs(imgLeft.at<uchar>(rowNr, disp) - imgRight.at<uchar>(rowNr, 0));
+
+		for(int columnNr = 1; columnNr < imgLeft.cols - disp; columnNr++ )
+			imgSAT.at<float>(0, columnNr) = imgSAT.at<float>(0, columnNr-1) + abs(imgLeft.at<uchar>(0, columnNr + disp) - imgRight.at<uchar>(0, 0));
+
+
+		for(int rowNr = 1; rowNr < imgLeft.rows; rowNr++ )
+			for(int columnNr = 1; columnNr < imgLeft.cols - disp; columnNr++ )
+				imgSAT.at<float>(rowNr, columnNr) = imgSAT.at<float>(rowNr, columnNr-1) + imgSAT.at<float>(rowNr-1, columnNr) - imgSAT.at<float>(rowNr-1, columnNr-1)+ abs(imgLeft.at<uchar>(rowNr, columnNr + disp) - imgRight.at<uchar>(rowNr, columnNr));
+
+
+
 		for(int rowNr = windowOffset; rowNr < imgLeft.rows-windowOffset; rowNr++ )
 		{
-			for(int columnNr = windowOffset + disp; columnNr < imgLeft.cols-windowOffset; columnNr++ )
+			for(int columnNr = windowOffset; columnNr < imgLeft.cols-windowOffset-disp; columnNr++ )
 			{
-				// leftwindow: rowNr, columnNr
-				// rightwindow: rowNr, columnNr - disp
 				
-				// generate comparisonwindow
-				// -------------------------
-				// TODO: use sliding window technique
-				float SAD_p_d = 0;
-				for(int u=rowNr-windowOffset; u<rowNr+windowOffset; u++)
-					for(int v=columnNr-windowOffset; v<columnNr+windowOffset; v++)
-						SAD_p_d += abs(imgLeft.at<uchar>(u,v) - imgRight.at<uchar>(u,v-disp));
+				float SAD_p_d = imgSAT.at<float>(rowNr + windowOffset, columnNr + windowOffset) - imgSAT.at<float>(rowNr - windowOffset, columnNr + windowOffset) - imgSAT.at<float>(rowNr + windowOffset, columnNr - windowOffset) + imgSAT.at<float>(rowNr - windowOffset, columnNr - windowOffset);
+
 #ifdef TEST
 				SAD_p_d /= windowSize*windowSize;
 #endif
 				// -------------------------
 				//
 #ifndef TEST
-				imgCostLeft.at<float>(rowNr, columnNr) = SAD_p_d;
-				imgCostRight.at<float>(rowNr, columnNr - disp) = SAD_p_d;
+				imgCostLeft.at<float>(rowNr, columnNr + disp) = SAD_p_d;
+				imgCostRight.at<float>(rowNr, columnNr) = SAD_p_d;
 #else
 				imgCostLeft.at<uchar>(rowNr, columnNr) = SAD_p_d;
 				imgCostRight.at<uchar>(rowNr, columnNr - disp) = SAD_p_d;
 #endif
+
 			}
 		}
+
 	}
 }
