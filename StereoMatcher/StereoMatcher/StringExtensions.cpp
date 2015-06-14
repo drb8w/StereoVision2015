@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include <string>
+#include <sstream>
 
 // ==============================================
 // string stuff
@@ -30,3 +31,18 @@ std::string ImgPath(int argc, char *argv[], int argNo, std::string &imgPath)
 	return imgPath;
 }
 
+std::string intToString(int number)
+{
+	
+   std::stringstream ss;//create a stringstream
+   ss << number;//add number to the stream
+   return ss.str();//return a string with the contents of the stream
+}
+
+std::string doubleToString(double number)
+{
+	
+   std::stringstream ss;//create a stringstream
+   ss << number;//add number to the stream
+   return ss.str();//return a string with the contents of the stream
+}

@@ -14,6 +14,9 @@
 #include "ComputeCostVolume.h"
 #include "SelectDisparity.h"
 #include "StringExtensions.h"
+#include "AggregateCostVolume.h"
+
+#include <direct.h>
 
 #include <iostream>
 using namespace std;
@@ -70,50 +73,63 @@ int main(int argc, char *argv[])
 		computeCostVolume(imgLeftGray, imgRightGray, *costVolumeLeft, *costVolumeRight, windowSize, maxDisp);
 
 
+		//for(double eps = 0.00001; eps<=0.0002; eps += 0.00001){
 
-	#ifdef TEST
+			int r = 9;
+			double eps = 0.0001;
+
+			aggregateCostVolume(imgLeft, imgRight, *costVolumeLeft, *costVolumeRight, r, eps);
+
+
+		#ifdef TEST
 	
-			cout << "showimg";
-		for(int i=0; i<costVolumeLeft->size();i++)
-		{
-			char intStr[10];
-			itoa (i,intStr,10);
+				cout << "showimg";
+			for(int i=0; i<costVolumeLeft->size();i++)
+			{
+				char intStr[10];
+				itoa (i,intStr,10);
 		
-			cout << i;
-			string str = "Display window " + string(intStr);
+				cout << i;
+				string str = "Display window " + string(intStr);
 
-			namedWindow( str, WINDOW_AUTOSIZE );// Create a window for display.
-			imshow( str, (*costVolumeLeft)[i] ); 
+				namedWindow( str, WINDOW_AUTOSIZE );// Create a window for display.
+				imshow( str, (*costVolumeLeft)[i] ); 
 
-			imwrite("./tsukuba_left_cost_volume"+ string(intStr) +".png", (*costVolumeLeft)[i]);
+				imwrite("./tsukuba_left_cost_volume"+ string(intStr) +".png", (*costVolumeLeft)[i]);
+			}
+				cout << "showimg end";
+		#endif
+
+			// ===============================================================
+			// Select Disparity 
+			// ===============================================================
+	
+
+			Mat displayLeft(imgLeft.rows,imgLeft.cols, CV_8U, (uchar)255);
+			Mat displayRight(imgRight.rows,imgRight.cols, CV_8U, (uchar)255);
+
+			selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
+
+			// ===============================================================
+			// Write Displays 
+			// ===============================================================
+
+			//string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
+
+
+			
+			//string path = "./output/"+ imgNames[i] + "_";
+			string displayLeftStr = "./output/"+ imgNames[i] + "_left.png";
+			//displayLeftStr = path + displayLeftStr;
+			imwrite(displayLeftStr, displayLeft);
+
+			string displayRightStr = "./output/"+ imgNames[i] + "_right.png";
+			//displayRightStr = path + displayRightStr;
+			imwrite(displayRightStr, displayRight);
 		}
-			cout << "showimg end";
-	#endif
-
-		// ===============================================================
-		// Select Disparity 
-		// ===============================================================
 	
-
-		Mat displayLeft(imgLeft.rows,imgLeft.cols, CV_8U, (uchar)255);
-		Mat displayRight(imgRight.rows,imgRight.cols, CV_8U, (uchar)255);
-
-		selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
-
-		// ===============================================================
-		// Write Displays 
-		// ===============================================================
-
-		//string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
-		string displayLeftStr = "./" + imgNames[i] + "_left.png";
-		imwrite(displayLeftStr, displayLeft);
-		//string displayRightStr = imgRightPath.substr(0,imgRightPath.size()-4) + "_display.png";
-		string displayRightStr = "./" + imgNames[i] + "_right.png";
-		imwrite(displayRightStr, displayRight);
-	}
-	
-	cout << "end matching" << endl;
-	
+		cout << "end matching" <<  endl;
+	//}
 
 	return 0;
 }
