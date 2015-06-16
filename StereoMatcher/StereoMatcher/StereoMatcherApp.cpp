@@ -15,6 +15,7 @@
 #include "SelectDisparity.h"
 #include "StringExtensions.h"
 #include "AggregateCostVolume.h"
+#include "RefineDisparity.h"
 
 #include <direct.h>
 
@@ -37,8 +38,6 @@ int main(int argc, char *argv[])
 
 	for(int i=0; i<4; i++){
 
-		//int i = 1;
-		
 		cout << imgNames[i] << endl;
 
 		int windowSize=13;
@@ -73,12 +72,11 @@ int main(int argc, char *argv[])
 		computeCostVolume(imgLeftGray, imgRightGray, *costVolumeLeft, *costVolumeRight, windowSize, maxDisp);
 
 
-		//for(double eps = 0.00001; eps<=0.0002; eps += 0.00001){
 
-			int r = 9;
-			double eps = 0.0001;
+		int r = 9;
+		double eps = 0.0001;
 
-			aggregateCostVolume(imgLeft, imgRight, *costVolumeLeft, *costVolumeRight, r, eps);
+		aggregateCostVolume(imgLeft, imgRight, *costVolumeLeft, *costVolumeRight, r, eps);
 
 
 		#ifdef TEST
@@ -110,26 +108,21 @@ int main(int argc, char *argv[])
 
 			selectDisparity(displayLeft, displayRight, *costVolumeLeft, *costVolumeRight, scaleDispFactor);
 
+			refineDisparity(displayLeft, displayRight, scaleDispFactor);
+
+
 			// ===============================================================
 			// Write Displays 
 			// ===============================================================
 
-			//string displayLeftStr = imgLeftPath.substr(0,imgLeftPath.size()-4) + "_display.png";
-
-
-			
-			//string path = "./output/"+ imgNames[i] + "_";
 			string displayLeftStr = "./output/"+ imgNames[i] + "_left.png";
-			//displayLeftStr = path + displayLeftStr;
 			imwrite(displayLeftStr, displayLeft);
 
 			string displayRightStr = "./output/"+ imgNames[i] + "_right.png";
-			//displayRightStr = path + displayRightStr;
 			imwrite(displayRightStr, displayRight);
 		}
 	
 		cout << "end matching" <<  endl;
-	//}
 
 	return 0;
 }
